@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Flight Log</string>
+    <string name="flight_card_arrival_icon_content_desc">Plane landing</string>
+    <string name="flight_card_departure_icon_content_desc">Plane taking off</string>
+    <string name="flight_card_time_pending">Pending</string>
+    <string name="add_flight_screen_airline_code_invalid">Airline Codes are 2 characters in length</string>
+    <string name="add_flight_screen_flight_number_not_numeric">Flight numbers must be numeric</string>
+    <string name="add_flight_screen_flight_number_too_long">Flight numbers are 0 - 5 digits in length</string>
+    <string name="add_flight_screen_flight_date_invalid">Date must be of the format YYYY-MM-DD</string>
+    <string name="add_flight_screen_flight_time_invalid">Time must be of the format HH:MM</string>
+    <string name="add_flight_screen_departure_airport_invalid">Departing Airport Code invalid</string>
+    <string name="add_flight_screen_arrival_airport_invalid">Arriving Airport Code invalid</string>
+    <string name="add_flight_screen_departure_arrival_airports_the_same">Departing and arriving airports must be different</string>
+    <string name="add_flight_screen_flight_already_exists">This flight already exists</string>
+</resources>

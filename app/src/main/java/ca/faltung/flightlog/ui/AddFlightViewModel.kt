@@ -4,7 +4,6 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.faltung.flightlog.R
 import ca.faltung.flightlog.data.model.Flight
 import ca.faltung.flightlog.data.repository.FlightRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,186 +12,139 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import javax.inject.Inject
 
-const val add_flight_vm_booking_code = "add_flight_vm_booking_code"
-const val add_flight_vm_airline_code = "add_flight_vm_airline_code"
-const val add_flight_vm_flight_number = "add_flight_vm_flight_number"
-const val add_flight_vm_flight_date = "add_flight_vm_flight_date"
-const val add_flight_vm_flight_time = "add_flight_vm_flight_time"
-const val add_flight_vm_departure_airport = "add_flight_vm_departure_airport"
-const val add_flight_vm_arrival_airport = "add_flight_vm_arrival_airport"
-const val add_flight_vm_airplane_model = "add_flight_vm_airplane_model"
-const val add_flight_vm_airplane_registration = "add_flight_vm_airplane_registration"
-const val add_flight_vm_validate_err = "add_flight_vm_validate_err"
-const val add_flight_vm_status = "add_flight_vm_status"
+private const val add_flight_vm_state = "add_flight_vm_state"
 
+
+/**
+ * ViewModel for the AddFlight screen
+ */
 @HiltViewModel
 class AddFlightViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val flightRepository: FlightRepository
 ) : ViewModel() {
-    val bookingCode = savedStateHandle.getStateFlow(add_flight_vm_booking_code, StringInput())
-    val airlineCode = savedStateHandle.getStateFlow(add_flight_vm_airline_code, StringInput())
-    val flightNumber = savedStateHandle.getStateFlow(add_flight_vm_flight_number, StringInput())
-    val flightDate = savedStateHandle.getStateFlow(add_flight_vm_flight_date, StringInput())
-    val flightTime = savedStateHandle.getStateFlow(add_flight_vm_flight_time, StringInput())
-    val departureAirport =
-        savedStateHandle.getStateFlow(add_flight_vm_departure_airport, StringInput())
-    val arrivalAirport = savedStateHandle.getStateFlow(add_flight_vm_arrival_airport, StringInput())
-    val airplaneModel = savedStateHandle.getStateFlow(add_flight_vm_airplane_model, StringInput())
-    val airplaneRegistration =
-        savedStateHandle.getStateFlow(add_flight_vm_airplane_registration, StringInput())
-    val validateErr = savedStateHandle.getStateFlow(add_flight_vm_validate_err, 0)
-    val status = savedStateHandle.getStateFlow(add_flight_vm_status, false)
-
-    private val isFirstFlightInfoValid =
-        combine(
-            bookingCode,
-            airlineCode,
-            flightNumber,
-            flightDate,
-            flightTime
-        ) { bc, ac, fn, fd, ft ->
-            bc.value.isNotBlank() && bc.errorResId == null &&
-                    ac.value.isNotBlank() && ac.errorResId == null &&
-                    fn.value.isNotBlank() && fn.errorResId == null &&
-                    fd.value.isNotBlank() && fd.errorResId == null &&
-                    ft.value.isNotBlank() && ft.errorResId == null
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), false)
-
-    val isValid =
-        combine(
-            isFirstFlightInfoValid,
-            departureAirport,
-            arrivalAirport,
-            airplaneModel,
-            validateErr
-        ) { ffi, da, aa, am, ve ->
-            ffi &&
-                    da.value.isNotBlank() && da.errorResId == null &&
-                    aa.value.isNotBlank() && aa.errorResId == null &&
-                    am.value.isNotBlank() && am.errorResId == null &&
-                    ve == 0
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), false)
+    val uiState: StateFlow<AddFlightUiState> = savedStateHandle.getStateFlow(add_flight_vm_state, AddFlightUiState.Success())
+    private val _flightAdded = MutableStateFlow(false)
+    val flightAdded: StateFlow<Boolean> = _flightAdded.asStateFlow()
 
     fun onBookingCodeEntered(code: String) {
-        savedStateHandle[add_flight_vm_booking_code] = bookingCode.value.copy(
-            value = code.uppercase(),
-            errorResId = null
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            bookingCode = code.uppercase(),
         )
     }
 
     fun onAirlineCodeEntered(code: String) {
-        var errId: Int? = null
-        if (!code.isNullOrEmpty() && code.length != 2) {
-            errId = R.string.add_flight_screen_airline_code_invalid
+        var isValid = false
+        if (!code.isNullOrEmpty() && code.length == 2) {
+            isValid = true
         }
 
-        savedStateHandle[add_flight_vm_airline_code] = airlineCode.value.copy(
-            value = code.uppercase(),
-            errorResId = errId
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            airlineCode = code.uppercase(),
+            airlineCodeValid = isValid,
         )
 
         refreshValidateState()
     }
 
     fun onFlightNumberEntered(code: String) {
-        var errId: Int? = null
-        if (!code.isNullOrEmpty() && !code.isDigitsOnly()) {
-            errId = R.string.add_flight_screen_flight_number_not_numeric
-        } else if (!code.isNullOrEmpty() && code.length > 5) {
-            errId = R.string.add_flight_screen_flight_number_too_long
+        var isValid = false
+        if (!code.isNullOrEmpty() && code.isDigitsOnly() && code.length < 6) {
+            isValid = true
         }
 
-        savedStateHandle[add_flight_vm_flight_number] = flightNumber.value.copy(
-            value = code,
-            errorResId = errId,
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            flightNumber = code,
+            flightNumberValid = isValid
         )
 
         refreshValidateState()
     }
 
     fun onFlightDateEntered(date: String) {
-        var errId: Int? = null
+        var isValid = true
         try {
             LocalDate.parse(date)
         } catch (e: java.lang.Exception) {
-            errId = R.string.add_flight_screen_flight_date_invalid
+            isValid = false
         }
 
-        savedStateHandle[add_flight_vm_flight_date] = flightDate.value.copy(
-            value = date,
-            errorResId = errId,
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            flightDate = date,
+            flightDateValid = isValid,
         )
 
         refreshValidateState()
     }
 
     fun onFlightTimeEntered(t: String) {
-        var errId: Int? = null
+        var isValid = true
         try {
             LocalTime.parse(t)
         } catch (e: java.lang.Exception) {
-            errId = R.string.add_flight_screen_flight_time_invalid
+            isValid = false
         }
 
-        savedStateHandle[add_flight_vm_flight_time] = flightTime.value.copy(
-            value = t,
-            errorResId = errId,
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            flightTime = t,
+            flightTimeValid = isValid,
         )
     }
 
     fun onDepartureAirportEntered(code: String) {
-        var errId: Int? = null
-        if (!isValidAirportCode(code)) {
-            errId = R.string.add_flight_screen_departure_airport_invalid
-        }
+        var isValid = isValidAirportCode(code)
 
-        savedStateHandle[add_flight_vm_departure_airport] = departureAirport.value.copy(
-            value = code.uppercase(),
-            errorResId = errId,
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            departureAirportCode = code.uppercase(),
+            departureAirportCodeValid = isValid,
         )
     }
 
     fun onArrivalAirportEntered(code: String) {
-        var errId: Int? = null
-        if (!isValidAirportCode(code)) {
-            errId = R.string.add_flight_screen_arrival_airport_invalid
-        } else if (departureAirport.value.value == code) {
-            errId = R.string.add_flight_screen_departure_arrival_airports_the_same
-        }
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        var isValid = isValidAirportCode(code) && oldUiState.departureAirportCode != code.uppercase()
 
-        savedStateHandle[add_flight_vm_arrival_airport] = arrivalAirport.value.copy(
-            value = code.uppercase(),
-            errorResId = errId,
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            arrivalAirportCode = code.uppercase(),
+            arrivalAirportCodeValid = isValid,
         )
     }
 
     fun onAirplaneModelEntered(model: String) {
-        savedStateHandle[add_flight_vm_airplane_model] = airplaneModel.value.copy(
-            value = model.uppercase(),
-            errorResId = null,
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            airplaneModel = model.uppercase(),
         )
     }
 
     fun onAirplaneRegistrationEntered(reg: String) {
-        savedStateHandle[add_flight_vm_airplane_registration] = airplaneRegistration.value.copy(
-            value = reg.uppercase(),
-            errorResId = null,
+        val oldUiState = uiState.value as AddFlightUiState.Success
+        savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+            airplaneRegistration = reg.uppercase(),
         )
     }
 
     private fun refreshValidateState() {
+        val oldUiState = uiState.value as AddFlightUiState.Success
         var ld : LocalDate
         try {
-            ld = LocalDate.parse(flightDate.value.value)
+            ld = LocalDate.parse(oldUiState.flightDate)
         } catch (e: java.lang.Exception) {
             return
         }
 
         viewModelScope.launch {
-            val f = flightRepository.getFlight(airlineCode.value.value, flightNumber.value.value.toInt(), ld)
+            val f = flightRepository.getFlight(oldUiState.airlineCode, oldUiState.flightNumber.toInt(), ld)
             if (f != null) {
-                savedStateHandle[add_flight_vm_validate_err] = R.string.add_flight_screen_flight_already_exists
+                savedStateHandle[add_flight_vm_state] = oldUiState.copy(
+                    flightAlreadyExists = true
+                )
             }
         }
     }
@@ -214,11 +166,13 @@ class AddFlightViewModel @Inject constructor(
 
     fun createFlight() {
         viewModelScope.launch {
+            val currUiState = uiState.value as AddFlightUiState.Success
+
             val scheduledDepartureTime =
-                if (flightTime.value.value.isNotBlank()) LocalTime.parse(flightTime.value.value) else LocalTime.parse(
+                if (currUiState.flightTime.isNotBlank()) LocalTime.parse(currUiState.flightTime) else LocalTime.parse(
                     "00:00:00"
                 )
-            val scheduledDepartureDate = LocalDate.parse(flightDate.value.value)
+            val scheduledDepartureDate = LocalDate.parse(currUiState.flightDate)
             val scheduledDeparture = LocalDateTime.parse(
                 "%d-%02d-%02dT%02d:%02d:00".format(
                     scheduledDepartureDate.year,
@@ -229,15 +183,15 @@ class AddFlightViewModel @Inject constructor(
                 )
             )
             val flight = Flight(
-                bookingCode = bookingCode.value.value,
-                airlineCode = airlineCode.value.value,
-                flightNumber = flightNumber.value.value.toInt(),
-                flightDate = flightDate.value.value.toLocalDate(),
+                bookingCode = currUiState.bookingCode,
+                airlineCode = currUiState.airlineCode,
+                flightNumber = currUiState.flightNumber.toInt(),
+                flightDate = currUiState.flightDate.toLocalDate(),
                 scheduledDeparture = scheduledDeparture.toInstant(TimeZone.currentSystemDefault()),
-                destination = arrivalAirport.value.value,
-                origin = departureAirport.value.value,
-                aircraft = airplaneModel.value.value,
-                aircraftRegistration = airplaneRegistration.value.value,
+                destination = currUiState.arrivalAirportCode,
+                origin = currUiState.departureAirportCode,
+                aircraft = currUiState.airplaneModel,
+                aircraftRegistration = currUiState.airplaneRegistration,
                 aircraftName = "",
                 takeoff = null,
                 landing = null,
@@ -245,8 +199,10 @@ class AddFlightViewModel @Inject constructor(
 
             try {
                 flightRepository.createFlight(flight)
+
+                _flightAdded.value = true
             } catch (e: Exception) {
-                savedStateHandle[add_flight_vm_status] = e.message
+                savedStateHandle[add_flight_vm_state] = AddFlightUiState.Error(e)
             }
         }
     }

@@ -1,5 +1,6 @@
 package ca.faltung.flightlog.ui
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,16 +35,19 @@ internal fun FlightListRoute(
         is FlightListUiState.Success -> FlightListScreen(
             modifier = modifier,
             uiState = uiState as FlightListUiState.Success,
+            takeoff = viewModel::takeoff,
+            landing = viewModel::landing,
         )
         is FlightListUiState.Error -> Text(text = "Error retrieving flights: " + (uiState as FlightListUiState.Error).exception.toString())
     }
-    
 }
 
 @Composable
 internal fun FlightListScreen(
     modifier: Modifier = Modifier,
     uiState: FlightListUiState.Success,
+    takeoff: (Flight) -> Unit = {},
+    landing: (Flight) -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -56,7 +60,7 @@ internal fun FlightListScreen(
                 flight.airlineCode + flight.flightNumber + flight.scheduledDeparture.toString()
             }
         ) { flight ->
-            FlightCard(flight = flight)
+            FlightCard(flight = flight, onArrivalClicked = { if (flight.landing == null) { landing(flight) } }, onDepartureClicked = { if (flight.takeoff == null) { takeoff(flight) } })
             Divider(color = Color.Black)
         }
     }

@@ -1,6 +1,7 @@
 package ca.faltung.flightlog.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
@@ -21,13 +22,15 @@ const val addFlightRoute = "flight_add_route"
 fun FlightLogApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = addFlightRoute
+    startDestination: String = flightListRoute
 
 ) {
     Scaffold (
         modifier = modifier,
         floatingActionButton = {
-            FloatingActionButton(onClick = { /*TODO*/ }) {
+            FloatingActionButton(onClick = {
+                navController.navigate(addFlightRoute)
+            }) {
                 Icon(Icons.Filled.Add, contentDescription = "Add flight")
             }
         },
@@ -41,7 +44,11 @@ fun FlightLogApp(
                 FlightListRoute()
             }
             composable(addFlightRoute) {
-                AddFlightRoute()
+                AddFlightRoute(
+                    onFlightAdded = {
+                        navController.navigate(flightListRoute)
+                    }
+                )
             }
         }
     }

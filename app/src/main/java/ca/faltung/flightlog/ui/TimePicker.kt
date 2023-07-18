@@ -1,12 +1,12 @@
 package ca.faltung.flightlog.ui
 
-import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,8 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.faltung.flightlog.R
+import ca.faltung.flightlog.ui.theme.FlightLogTheme
 import kotlinx.datetime.*
 
 @Composable
@@ -53,7 +55,18 @@ fun TimePicker (
         Image(
             painter = painterResource(id = R.drawable.ic_time_selector),
             contentDescription = "Time selector",
-            modifier = modifier.align(Alignment.CenterEnd).padding(horizontal = 8.dp).clickable { dialog.show() },
+            modifier = modifier
+                .align(Alignment.CenterEnd)
+                .padding(horizontal = 8.dp)
+                .clickable { dialog.show() },
         )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewTimePicker() {
+    FlightLogTheme {
+        TimePicker(label = { Text("Test Time Picker") }, value = "12:34:56")
     }
 }

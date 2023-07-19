@@ -1,11 +1,9 @@
 package ca.faltung.flightlog.ui
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -54,8 +52,24 @@ internal fun FlightListScreen(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        item {
+            // TODO: use header styling
+            Text(text = "Upcoming")
+        }
         items(
-            items = uiState.flights,
+            items = uiState.upcomingFlights,
+            key = { flight ->
+                flight.airlineCode + flight.flightNumber + flight.scheduledDeparture.toString()
+            }
+        ) { flight ->
+            FlightCard(flight = flight, onArrivalClicked = { if (flight.landing == null) { landing(flight) } }, onDepartureClicked = { if (flight.takeoff == null) { takeoff(flight) } })
+            Divider(color = Color.Black)
+        }
+        item {
+            Text(text = "Past")
+        }
+        items(
+            items = uiState.pastFlights,
             key = { flight ->
                 flight.airlineCode + flight.flightNumber + flight.scheduledDeparture.toString()
             }
@@ -71,12 +85,29 @@ internal fun FlightListScreen(
 fun PreviewFlightListScreen() {
     FlightLogTheme {
         FlightListScreen(
-            uiState = FlightListUiState.Success(previewFlightList)
+            uiState = FlightListUiState.Success(upcomingFlights = previewUpcomingFlightList, pastFlights = previewPastFlightList)
         )
     }
 }
 
-val previewFlightList = listOf(
+val previewUpcomingFlightList = listOf(
+    Flight(
+        origin ="YYC",
+        destination = "YYZ",
+        airlineCode = "AC",
+        flightNumber = 122,
+        flightDate = "2026-06-30".toLocalDate(),
+        takeoff = null,
+        landing = null,
+        scheduledDeparture = "2026-06-30T14:30:00Z".toInstant(),
+        aircraft = null,
+        aircraftRegistration = "",
+        aircraftName = "",
+        bookingCode = "TEST123",
+    )
+)
+
+val previewPastFlightList = listOf(
     Flight(
         origin ="YYC",
         destination = "YYZ",

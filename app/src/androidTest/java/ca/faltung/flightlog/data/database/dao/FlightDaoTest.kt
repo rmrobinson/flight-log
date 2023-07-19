@@ -7,11 +7,19 @@ import ca.faltung.flightlog.data.database.FlightDatabase
 import ca.faltung.flightlog.data.database.entities.FlightEntity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDate
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.toLocalTime
 import org.junit.Before
 import org.junit.Test
+import java.time.temporal.ChronoUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
+import kotlin.time.ExperimentalTime
 
 class FlightDaoTest {
     private lateinit var flightDao: FlightDao
@@ -29,12 +37,12 @@ class FlightDaoTest {
         val newFlight = FlightEntity(
             airlineIataCode = "AC",
             flightNumber = 123,
-            scheduledDepartureDate = "2023-01-01".toLocalDate(),
-            scheduledDepartureTime = "11:23:45".toLocalTime(),
+            flightDate = "2023-01-01".toLocalDate(),
+            scheduledDeparture = "2023-01-01T11:23:45Z".toInstant(),
             originIataCode = "YYZ",
             destinationIataCode = "YYC",
-            arrivedAt = null,
-            departedAt = null,
+            takeoffAt = null,
+            landedAt = null,
             aircraftIataCode = null,
             airlineBookingCode = null,
         )
@@ -47,8 +55,8 @@ class FlightDaoTest {
             assert(foundFlights.size == 1)
             assert(foundFlights[0].flightNumber == 123)
             assert(foundFlights[0].airlineIataCode == "AC")
-            assert(foundFlights[0].scheduledDepartureDate.toString() == "2023-01-01")
-            assert(foundFlights[0].scheduledDepartureTime.toString() == "11:23:45")
+            assert(foundFlights[0].flightDate.toString() == "2023-01-01")
+            assert(foundFlights[0].scheduledDeparture.toString() == "2023-01-01T11:23:45Z")
         }
     }
 
@@ -60,24 +68,24 @@ class FlightDaoTest {
                 val outboundFlight = FlightEntity(
                     airlineIataCode = "AC",
                     flightNumber = i,
-                    scheduledDepartureDate = LocalDate(2022, i, 1),
-                    scheduledDepartureTime = "11:23:45".toLocalTime(),
+                    flightDate = LocalDate(2022, i, 1),
+                    scheduledDeparture = "2023-01-01T11:23:45Z".toInstant(),
                     originIataCode = "YYZ",
                     destinationIataCode = "YYC",
-                    arrivedAt = null,
-                    departedAt = null,
+                    landedAt = null,
+                    takeoffAt = null,
                     aircraftIataCode = null,
                     airlineBookingCode = "TEST$i",
                 )
                 val inboundFlight = FlightEntity(
                     airlineIataCode = "AC",
                     flightNumber = i,
-                    scheduledDepartureDate = LocalDate(2022, i, 2),
-                    scheduledDepartureTime = "12:23:45".toLocalTime(),
+                    flightDate = LocalDate(2022, i, 2),
+                    scheduledDeparture = "2023-01-01T12:23:45Z".toInstant(),
                     originIataCode = "YYC",
                     destinationIataCode = "YYZ",
-                    arrivedAt = null,
-                    departedAt = null,
+                    landedAt = null,
+                    takeoffAt = null,
                     aircraftIataCode = null,
                     airlineBookingCode = "TEST$i",
                 )

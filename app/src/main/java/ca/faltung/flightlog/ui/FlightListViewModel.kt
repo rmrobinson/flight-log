@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import kotlin.time.Duration
 
@@ -16,13 +18,21 @@ import kotlin.time.Duration
 class FlightListViewModel @Inject constructor(
     private val flightRepository: FlightRepository
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(FlightListUiState.Success(emptyList()))
+    private val _uiState = MutableStateFlow(FlightListUiState.Success(emptyList(), emptyList()))
     val uiState: StateFlow<FlightListUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
             flightRepository.getFlights().collect { flights ->
-                _uiState.value = FlightListUiState.Success(flights)
+                _uiState.value = FlightListUiState.Success(
+                    upcomingFlights = flights.filter {
+                        it.flightDate > today || it.flightDate == today && it.landing == null
+                    },
+                    pastFlights = flights.filter {
+                        it.flightDate < today || it.flightDate == today && it.landing != null
+                    }
+                )
             }
         }
     }

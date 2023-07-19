@@ -82,7 +82,7 @@ fun flightTimeFormatted(flightTime: Instant): String {
 fun PreviewFlightCard() {
     FlightLogTheme {
         FlightCard(
-            previewFlightList[0]
+            previewPastFlightList[0]
         )
     }
 }

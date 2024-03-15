@@ -15,13 +15,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ca.faltung.flightlog.R
-import ca.faltung.flightlog.ui.theme.FlightLogTheme
+import ca.faltung.flightlog.ui.theme.AppTheme
 import kotlinx.datetime.*
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun AddFlightRoute(
     modifier: Modifier = Modifier,
@@ -56,7 +54,6 @@ internal fun AddFlightRoute(
     }
 }
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun AddFlightScreen (
     modifier: Modifier = Modifier,
@@ -218,7 +215,7 @@ internal fun AddFlightScreen (
 @Preview
 @Composable
 fun PreviewAddFlightScreen() {
-    FlightLogTheme {
+    AppTheme {
         AddFlightScreen(uiState = AddFlightUiState.Success(
             airlineCode = "AC",
             airlineCodeValid = true,
@@ -241,7 +238,7 @@ fun PreviewAddFlightScreen() {
 @Preview
 @Composable
 fun PreviewAddFlightScreenFlightExists() {
-    FlightLogTheme {
+    AppTheme {
         AddFlightScreen(uiState = AddFlightUiState.Success(
             airlineCode = "AC",
             flightNumber = "123",

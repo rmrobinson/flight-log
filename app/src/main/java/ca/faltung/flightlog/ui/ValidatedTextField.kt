@@ -10,11 +10,10 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.faltung.flightlog.R
-import ca.faltung.flightlog.ui.theme.FlightLogTheme
+import ca.faltung.flightlog.ui.theme.AppTheme
 
 @Composable
 fun ValidatedTextField(
@@ -52,7 +51,7 @@ fun ValidatedTextField(
 @Preview
 @Composable
 fun PreviewValidatedStringWithoutError() {
-    FlightLogTheme {
+    AppTheme {
         ValidatedTextField(label = { Text("Test TextBox")}, input = StringInput(value = "Test Value"))
     }
 }
@@ -60,7 +59,7 @@ fun PreviewValidatedStringWithoutError() {
 @Preview
 @Composable
 fun PreviewValidatedStringWithError() {
-    FlightLogTheme {
+    AppTheme {
         ValidatedTextField(label = { Text("Test TextBox")}, input = StringInput(value = "Test Value", errorResId = R.string.add_flight_screen_flight_already_exists))
     }
 }

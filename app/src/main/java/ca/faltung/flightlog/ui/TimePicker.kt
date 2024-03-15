@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.faltung.flightlog.R
-import ca.faltung.flightlog.ui.theme.FlightLogTheme
+import ca.faltung.flightlog.ui.theme.AppTheme
 import kotlinx.datetime.*
 
 @Composable
@@ -66,7 +66,7 @@ fun TimePicker (
 @Preview
 @Composable
 fun PreviewTimePicker() {
-    FlightLogTheme {
+    AppTheme {
         TimePicker(label = { Text("Test Time Picker") }, value = "12:34:56")
     }
 }

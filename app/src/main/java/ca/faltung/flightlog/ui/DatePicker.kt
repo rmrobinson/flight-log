@@ -27,7 +27,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.faltung.flightlog.R
-import ca.faltung.flightlog.ui.theme.FlightLogTheme
+import ca.faltung.flightlog.ui.theme.AppTheme
 import kotlinx.datetime.*
 
 @Composable
@@ -111,7 +111,7 @@ fun DatePicker(
 @Preview
 @Composable
 fun PreviewDatePicker() {
-    FlightLogTheme {
+    AppTheme {
         DatePicker(label = { Text("Test Date Picker") }, value = "2023-01-01")
     }
 }

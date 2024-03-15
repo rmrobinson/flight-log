@@ -15,7 +15,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ca.faltung.flightlog.data.model.Flight
 import ca.faltung.flightlog.R
-import ca.faltung.flightlog.ui.theme.FlightLogTheme
+import ca.faltung.flightlog.ui.theme.AppTheme
 import kotlinx.datetime.*
 import java.time.format.DateTimeFormatter
 
@@ -38,15 +38,15 @@ fun FlightCard(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            flightEvent(airportCode = flight.destination, flightTime = flight.landing, iconResId = R.drawable.ic_flight_land_line, iconDescResId = R.string.flight_card_arrival_icon_content_desc, onClick = onArrivalClicked)
+            FlightEvent(airportCode = flight.destination, flightTime = flight.landing, iconResId = R.drawable.ic_flight_land_line, iconDescResId = R.string.flight_card_arrival_icon_content_desc, onClick = onArrivalClicked)
             Spacer(modifier = Modifier.height(4.dp))
-            flightEvent(airportCode = flight.origin, flightTime = flight.takeoff, iconResId = R.drawable.ic_flight_takeoff_line, iconDescResId = R.string.flight_card_departure_icon_content_desc, onClick = onDepartureClicked)
+            FlightEvent(airportCode = flight.origin, flightTime = flight.takeoff, iconResId = R.drawable.ic_flight_takeoff_line, iconDescResId = R.string.flight_card_departure_icon_content_desc, onClick = onDepartureClicked)
         }
     }
 }
 
 @Composable
-private fun flightEvent(airportCode: String, flightTime: Instant?, iconResId: Int, iconDescResId: Int, onClick: (Int) -> Unit) {
+private fun FlightEvent(airportCode: String, flightTime: Instant?, iconResId: Int, iconDescResId: Int, onClick: (Int) -> Unit) {
     Row (
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -80,7 +80,7 @@ fun flightTimeFormatted(flightTime: Instant): String {
 @Preview(name = "Light Mode")
 @Composable
 fun PreviewFlightCard() {
-    FlightLogTheme {
+    AppTheme {
         FlightCard(
             previewPastFlightList[0]
         )

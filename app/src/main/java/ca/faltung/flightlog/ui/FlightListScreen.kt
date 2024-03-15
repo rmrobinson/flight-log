@@ -14,14 +14,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ca.faltung.flightlog.data.model.Flight
-import ca.faltung.flightlog.ui.theme.FlightLogTheme
+import ca.faltung.flightlog.ui.theme.AppTheme
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDate
 
-@OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
 internal fun FlightListRoute(
     modifier: Modifier = Modifier,
@@ -83,7 +81,7 @@ internal fun FlightListScreen(
 @Preview
 @Composable
 fun PreviewFlightListScreen() {
-    FlightLogTheme {
+    AppTheme {
         FlightListScreen(
             uiState = FlightListUiState.Success(upcomingFlights = previewUpcomingFlightList, pastFlights = previewPastFlightList)
         )
